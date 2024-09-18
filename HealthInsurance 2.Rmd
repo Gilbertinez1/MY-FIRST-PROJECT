@@ -1,0 +1,266 @@
+---
+title: "RG"
+output: html_document
+date: "2024-08-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#install library
+```{r}
+install
+```
+
+#
+```{r}
+install.packages("pROC")
+```
+
+
+
+#load packages
+```{r}
+#install.packages("rlang")
+#install.packages("tibble")
+#install.packages("dplyr")
+#install.packages("tidyr")
+install.packages("recipes")
+install.packages("caret")
+
+
+```
+
+
+#load library
+```{r}
+library(caret)
+library(recipes)
+library(pROC)
+```
+
+
+
+
+
+
+#LOAD DATA
+```{r}
+data <-read.csv("C:/Users/JULIANA/Downloads/insurance.csv")
+```
+
+#read
+```{r}
+head(data)
+```
+data transformation-encode sex and smoker categorical  variables
+
+
+```{r}
+data <- data %>%
+  mutate(
+    smoker = ifelse(smoker == "yes", 1, 0),
+    sex = ifelse(sex == "male", 1, 0)
+  ) %>%
+  mutate_at(vars(region), ~ as.factor(.)) %>%
+  mutate_at(vars(region), ~ as.numeric(.))
+
+
+```
+data print
+```{r}
+data
+
+```
+#split data into testing and training set
+```{r}
+set.seed(42)
+trainIndex <- createDataPartition(data$charges, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+df_train <- data[trainIndex,]
+df_test <- data[-trainIndex,]
+```
+#
+```{r}
+df_train
+```
+fit model
+```{r}
+#Fit a linear regression model
+model <- lm(charges ~ ., data = df_train)
+```
+#
+
+```{r}
+#Model Summary
+summary(model)
+```
+#prediction
+```{r}
+#Make predictions on the test set
+predictions <- predict(model, newdata = df_test)
+predictions
+```
+#
+#
+```{r}
+#Demonstrate how predictions are working
+# Combine the actual and predicted values into a datsa frame
+results <- data.frame(
+  Actual_Charges = df_test$charges,
+  Predicted_Charges = predictions
+)
+
+# Display the first 10 predictions alongside the actual values
+head(results, 10)
+```
+
+#scatter 
+```{r}
+# Scatter plot of Actual vs Predicted Charges
+plot(df_test$charges, predictions, 
+     main = "Actual vs Predicted Charges",
+     xlab = "Actual Charges", ylab = "Predicted Charges",
+     pch = 19, col = "blue")
+
+# Add a diagonal line to indicate perfect prediction
+abline(a = 0, b = 1, col = "red", lwd = 2)
+
+```
+
+#
+```{r}
+#Generate Regression Curve (Predicted Charges vs Age)
+plot(df_test$age, predictions, 
+     main = "Predicted Charges vs Age",
+     xlab = "Age", ylab = "Predicted Charges",
+     pch = 19, col = "blue")
+
+# Add a regression line
+abline(lm(predictions ~ df_test$age), col = "red", lwd = 2)
+```
+
+
+#evaluation matrix with mean and r squared error
+```{r}
+# Mean Squared Error (MSE)
+mse <- mean((df_test$charges - predictions)^2)
+
+# R-squared (R²)
+r_squared <- summary(model)$r.squared
+
+# Print the evaluation metrics
+cat("Mean Squared Error (MSE):", mse, "\n")
+cat("R-squared (R²):", r_squared, "\n")
+
+```
+
+#
+```{r}
+#Fit a Multiple Linear Regression Model
+mlr_model <- lm(charges ~ age + bmi + children + sex + region + smoker, data = df_train)
+
+```
+#
+```{r}
+#Model Summary
+summary(mlr_model)
+
+```
+#
+```{r}
+#Make predictions on the test set for Multiple Linear Regression
+mlr_predictions <- predict(mlr_model, newdata = df_test)
+
+```
+#
+```{r}
+# Create a data frame to compare actual and predicted values
+results <- data.frame(
+  Actual_Charges = df_test$charges,
+  Predicted_Charges = predictions
+)
+
+# View the first 10 results
+head(results, 10)
+
+```
+#
+```{r}
+# Mean Squared Error (MSE)
+mse <- mean((df_test$charges - predictions)^2)
+
+# R-squared (R²)
+r_squared <- summary(mlr_model)$r.squared
+
+# Print the evaluation metrics
+cat("Mean Squared Error (MSE):", mse, "\n")
+cat("R-squared (R²):", r_squared, "\n")
+
+```
+#logistics
+```{r}
+# Fit the logistic regression model
+log_model <- glm(smoker ~ age + bmi + children + sex + region, data = df_train, family = binomial)
+```
+
+
+#
+```{r}
+# View a summary of the model
+summary(log_model)
+
+```
+#
+```{r}
+# Make predictions1 on the test set (returns probabilities)
+probabilities <- predict(log_model, newdata = df_test, type = "response")
+
+# Convert probabilities to binary outcome (threshold = 0.5)
+predictions1 <- ifelse(probabilities > 0.5, 1, 0)
+
+# Create a data frame to compare actual and predicted values
+results1 <- data.frame(
+  Actual_Smoker = df_test$smoker,
+  Predicted_Smoker = predictions,
+  Probability = probabilities
+)
+
+# View the first 10 results
+head(results1, 10)
+```
+#evaluate
+```{r}
+# Confusion matrix
+conf_matrix <- table(df_test$smoker, predictions)
+print(conf_matrix)
+
+
+
+```
+#
+```{r}
+
+# Calculate accuracy
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+cat("Accuracy:", accuracy, "\n")
+```
+#
+```{r}
+# Calculate the AUC (Area Under the Curve)
+roc_curve <- roc(df_test$smoker, probabilities)
+auc_value <- auc(roc_curve)
+cat("AUC:", auc_value, "\n")
+```
+#
+```{r}
+plot(roc_curve, col = "blue", main = "ROC Curve")
+
+```
+#
+```{r}
+write.csv(data)
+
+```
+

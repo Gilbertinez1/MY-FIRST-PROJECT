@@ -1,0 +1,65 @@
+CREATE TABLE Employees(
+    EmployeeID INT PRIMARY KEY AUTO_INCREMENT,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    DepartmentID INT,
+    ProjectID INT
+); 
+CREATE TABLE Departments(
+    DepartmentID INT PRIMARY KEY AUTO_INCREMENT,
+    DepartmentName VARCHAR(50)
+);
+CREATE TABLE Projects(
+    ProjectID INT PRIMARY KEY AUTO_INCREMENT,
+    ProjectName VARCHAR(50),
+    DepartmentID INT
+);
+
+
+INSERT INTO Departments(DepartmentName)
+Values('Marketing');
+
+INSERT INTO Departments(DepartmentName)
+Values('Engineering');
+
+INSERT INTO Employees ( FirstName, LastName)
+VALUES ( 'Sarah', 'Davis');
+       ( 'Emily', 'Johnson'),
+       ('),
+       (5, 'Sarah', 'Davis', 3, NULL);
+UPDATE Projects
+SET DepartmentID = 2
+WHERE ProjectID = 3;
+
+
+SELECT Employees.EmployeeID, Employees.FirstName, Employees.LastName, Departments.DepartmentName
+FROM Employees
+INNER JOIN Departments ON Employees.DepartmentID = Departments.DepartmentID;
+
+SELECT Employees.EmployeeID, Employees.FirstName, Departments.DepartmentName
+FROM Employees
+RIGHT JOIN Departments ON Employees.DepartmentID = Departments.DepartmentID;
+
+SELECT Employees.FirstName, Departments.DepartmentName
+FROM Employees
+CROSS JOIN Departments;
+CREATE TABLE EmployeeAudit (
+    AuditID INT IDENTITY(1,1) PRIMARY KEY,
+    EmployeeID INT,
+    OperationType VARCHAR(10),
+    OperationTime DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE EmployeeAudit (
+    AuditID INT IDENTITY(1,1) PRIMARY KEY,
+    EmployeeID INT,
+    OperationType VARCHAR(10),
+    OperationTime DATETIME DEFAULT GETDATE()
+);
+
+CREATE TABLE EmployeeAudit (
+    AuditID INT AUTO_INCREMENT PRIMARY KEY,
+    EmployeeID INT,
+    OperationType VARCHAR(10),
+    OperationTime DATETIME DEFAULT CURRENT_TIMESTAMP
+);
